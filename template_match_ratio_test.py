@@ -30,6 +30,7 @@ cv.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, good_match
 oldSize = len(good_matches)
 newSize = -1
 j = 0
+
 ###Sequential RANSAC
 while(newSize != oldSize and len(good_matches) >= 4):
     oldSize = len(good_matches)
@@ -44,6 +45,7 @@ while(newSize != oldSize and len(good_matches) >= 4):
         scene[i,0] = keypoints_scene[good_matches[i].trainIdx].pt[0]
         scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
     H, mask =  cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
+    # H homography from template to scene
 
     #Take points from the scene that fits with the homography
     img_instance_matches = np.empty((max(img_object.shape[0], img_scene.shape[0]), img_object.shape[1]+img_scene.shape[1], 3), dtype=np.uint8)
@@ -72,23 +74,36 @@ while(newSize != oldSize and len(good_matches) >= 4):
     obj_corners[3,0,0] = 0
     obj_corners[3,0,1] = img_object.shape[0]
 
-    #Draw lines between the corners
     try:
+        #Check for degenerate homography
+        valid = True
+        for k in range(0, len(obj_corners)):
+            x = obj_corners[k,0,0]
+            y = obj_corners[k,0,1]
+            if (H[2][0]*x + H[2][1]*y + H[2][2]) / np.linalg.det(H) <= 0:
+                valid = False
+
+        #Draw lines between the corners
         scene_corners = cv.perspectiveTransform(obj_corners, H)
-        cv.line(img_matches, (int(scene_corners[0,0,0] + img_object.shape[1]), int(scene_corners[0,0,1])),\
-            (int(scene_corners[1,0,0] + img_object.shape[1]), int(scene_corners[1,0,1])), (0,255,0), 4)
-        cv.line(img_matches, (int(scene_corners[1,0,0] + img_object.shape[1]), int(scene_corners[1,0,1])),\
-            (int(scene_corners[2,0,0] + img_object.shape[1]), int(scene_corners[2,0,1])), (0,255,0), 4)
-        cv.line(img_matches, (int(scene_corners[2,0,0] + img_object.shape[1]), int(scene_corners[2,0,1])),\
-            (int(scene_corners[3,0,0] + img_object.shape[1]), int(scene_corners[3,0,1])), (0,255,0), 4)
-        cv.line(img_matches, (int(scene_corners[3,0,0] + img_object.shape[1]), int(scene_corners[3,0,1])),\
-            (int(scene_corners[0,0,0] + img_object.shape[1]), int(scene_corners[0,0,1])), (0,255,0), 4)
+
+        #Draw Bounding box on the image
+        if valid:
+            cv.line(img_matches, (int(scene_corners[0,0,0] + img_object.shape[1]), int(scene_corners[0,0,1])),\
+                (int(scene_corners[1,0,0] + img_object.shape[1]), int(scene_corners[1,0,1])), (0,255,0), 4)
+            cv.line(img_matches, (int(scene_corners[1,0,0] + img_object.shape[1]), int(scene_corners[1,0,1])),\
+                (int(scene_corners[2,0,0] + img_object.shape[1]), int(scene_corners[2,0,1])), (0,255,0), 4)
+            cv.line(img_matches, (int(scene_corners[2,0,0] + img_object.shape[1]), int(scene_corners[2,0,1])),\
+                (int(scene_corners[3,0,0] + img_object.shape[1]), int(scene_corners[3,0,1])), (0,255,0), 4)
+            cv.line(img_matches, (int(scene_corners[3,0,0] + img_object.shape[1]), int(scene_corners[3,0,1])),\
+                (int(scene_corners[0,0,0] + img_object.shape[1]), int(scene_corners[0,0,1])), (0,255,0), 4)
+
     except:
         print("Cannot draw bounding box")
         print(H)
     
     j += 1
 
+ ### End Sequential RANSAC
 
 #Show detected matches
 cv.imshow('Good Matches', img_matches)

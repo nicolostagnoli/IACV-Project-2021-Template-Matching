@@ -3,7 +3,7 @@ import numpy as np
 import argparse
 
 img_scene = cv.imread("Test/Test1.jpg", cv.IMREAD_GRAYSCALE)
-img_object = cv.imread("Templates/MrRiceTemplate.jpg", cv.IMREAD_GRAYSCALE)
+img_object = cv.imread("Templates/MrRiceTemplateCrop.jpg", cv.IMREAD_GRAYSCALE)
 
 #-- Step 1: Detect the keypoints using SURF Detector, compute the descriptors
 minHessian = 400
@@ -62,4 +62,5 @@ cv.line(img_matches, (int(scene_corners[3,0,0] + img_object.shape[1]), int(scene
 
 #-- Show detected matches
 cv.imshow('Good Matches & Object detection', img_matches)
+cv.imwrite("output.jpg", img_matches)
 cv.waitKey()

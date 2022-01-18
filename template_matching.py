@@ -4,10 +4,11 @@ from matplotlib import pyplot as plt
 
 sift = cv2.xfeatures2d.SIFT_create()
 bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
+matcher = cv2.DescriptorMatcher_create(cv2.DescriptorMatcher_FLANNBASED)
 
-img = cv2.imread('Test1.jpg')
+img = cv2.imread('Test/Test1.jpg')
 img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-template = cv2.imread('MrRiceTemplate.jpg', 0)
+template = cv2.imread('Templates/MrRiceTemplate.jpg', 0)
 #template_gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
 height, width = template.shape[::]
 
@@ -24,6 +25,7 @@ cv2.imshow('image', sift_template)
 
 # match descriptors of both images
 matches = bf.match(descriptors, descriptors_t)
+knn_matches = matcher.knnMatch(descriptors, descriptors_t, 2)
 # sort matches by distance
 matches = sorted(matches, key = lambda x:x.distance)
 # draw first 50 matches

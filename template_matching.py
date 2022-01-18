@@ -28,8 +28,10 @@ matches = bf.match(descriptors, descriptors_t)
 knn_matches = matcher.knnMatch(descriptors, descriptors_t, 2)
 # sort matches by distance
 matches = sorted(matches, key = lambda x:x.distance)
+knn_matches = sorted(knn_matches, key = lambda x:x.distance)
 # draw first 50 matches
-matched_img = cv2.drawMatches(img, keypoints, template, keypoints_t, matches[:], template, flags=2)
+#matched_img = cv2.drawMatches(img, keypoints, template, keypoints_t, matches[:], template, flags=2)
+matched_img = cv2.drawMatches(img, keypoints, template, keypoints_t, knn_matches[:], template, flags=2)
 # show the image
 cv2.imshow('image', matched_img)
 cv2.imwrite("matched_images.jpg", matched_img)

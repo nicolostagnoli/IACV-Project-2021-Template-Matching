@@ -23,18 +23,10 @@ cv2.imshow('image', sift_image)
 cv2.imshow('image', sift_template)
 
 # match descriptors of both images
-matches = bf.match(descriptors, descriptors_t)
-
-#-- Filter matches using the Lowe's ratio test
-ratio_thresh = 0.75
-good_matches = []
-for m,n in matches:
-    if m.distance < ratio_thresh * n.distance:
-        good_matches.append(m)
-
+matches = bf.match(descriptors, descriptors_t, 2)
 
 # draw matches
-matched_img = cv2.drawMatches(img, keypoints, template, keypoints_t, good_matches[:], template, flags=2)
+matched_img = cv2.drawMatches(img, keypoints, template, keypoints_t, matches[:], template, flags=2)
 
 # show the image
 cv2.imshow('image', matched_img)

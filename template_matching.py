@@ -4,7 +4,6 @@ from matplotlib import pyplot as plt
 
 sift = cv2.xfeatures2d.SIFT_create()
 bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
-matcher = cv2.DescriptorMatcher_create(cv2.DescriptorMatcher_FLANNBASED)
 
 img = cv2.imread('Test/Test1.jpg')
 img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -25,13 +24,18 @@ cv2.imshow('image', sift_template)
 
 # match descriptors of both images
 matches = bf.match(descriptors, descriptors_t)
-knn_matches = matcher.knnMatch(descriptors, descriptors_t, 2)
-# sort matches by distance
-matches = sorted(matches, key = lambda x:x.distance)
-knn_matches = sorted(knn_matches, key = lambda x:x.distance)
-# draw first 50 matches
-#matched_img = cv2.drawMatches(img, keypoints, template, keypoints_t, matches[:], template, flags=2)
-matched_img = cv2.drawMatches(img, keypoints, template, keypoints_t, knn_matches[:], template, flags=2)
+
+#-- Filter matches using the Lowe's ratio test
+ratio_thresh = 0.75
+good_matches = []
+for m,n in matches:
+    if m.distance < ratio_thresh * n.distance:
+        good_matches.append(m)
+
+
+# draw matches
+matched_img = cv2.drawMatches(img, keypoints, template, keypoints_t, good_matches[:], template, flags=2)
+
 # show the image
 cv2.imshow('image', matched_img)
 cv2.imwrite("matched_images.jpg", matched_img)

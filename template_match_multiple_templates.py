@@ -8,8 +8,8 @@ from Template import Template
 
 #Detect the keypoints using SIFT/SURF Detector, compute the descriptors
 minHessian = 400
-detector = cv.xfeatures2d_SURF.create(hessianThreshold=minHessian)
-#detector = cv.xfeatures2d_SIFT.create()
+#detector = cv.xfeatures2d_SURF.create(hessianThreshold=minHessian)
+detector = cv.xfeatures2d_SIFT.create()
 
 #Read all templates
 template_files = os.listdir("Templates")
@@ -35,8 +35,9 @@ good_matches_all = []
 for i, t in enumerate(templates):
     matcher = cv.DescriptorMatcher_create(cv.DescriptorMatcher_FLANNBASED)
     knn_matches = matcher.knnMatch(descriptors_templates[i], descriptors_scene, 2)
+
     #Filter matches using the Lowe's ratio test
-    ratio_thresh = 0.75
+    ratio_thresh = 0.55
     good_matches_obj = []
     for m,n in knn_matches:
         if m.distance < ratio_thresh * n.distance:
@@ -46,6 +47,7 @@ for i, t in enumerate(templates):
 #Draw matches on the image
 for i, t in enumerate(templates):
     img_matches = np.empty((max(templates[i].image.shape[0], img_scene.shape[0]), templates[i].image.shape[1]+img_scene.shape[1], 3), dtype=np.uint8)
+    cv.drawMatches(templates[i].image, keypoints_templates[i], img_scene, keypoints_scene, good_matches_all[i], img_matches, flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
     
     #stop flags
     good_matches = good_matches_all[i]
@@ -124,9 +126,10 @@ for i, t in enumerate(templates):
             print(H)
 
         j += 1
+        
 
      ### End Sequential RANSAC
-
-    #Show detected matches
+     #Show detected matches
     cv.imshow('Good Matches', img_matches)
-    cv.imwrite("output.jpg", img_matches)
+    cv.imwrite("output" + str(i) + ".jpg", img_matches)
+    cv.waitKey()

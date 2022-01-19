@@ -3,6 +3,7 @@ import numpy as np
 import argparse
 import numpy.ma as ma
 import os
+import random
 
 from Template import Template
 
@@ -17,8 +18,7 @@ templates = []
 for f in template_files:
     templates.append(Template("Templates/" + str(f)))
 
-img_object = cv.imread("Templates/MrRiceTemplateCrop.jpg", cv.IMREAD_GRAYSCALE)
-img_scene = cv.imread("Test/Test1.jpg", cv.IMREAD_GRAYSCALE)
+img_scene = cv.imread("Test/test_image.jpg")
 
 #Compute keypoints and descriptors
 keypoints_templates = []
@@ -37,7 +37,7 @@ for i, t in enumerate(templates):
     knn_matches = matcher.knnMatch(descriptors_templates[i], descriptors_scene, 2)
 
     #Filter matches using the Lowe's ratio test
-    ratio_thresh = 0.55
+    ratio_thresh = 0.75
     good_matches_obj = []
     for m,n in knn_matches:
         if m.distance < ratio_thresh * n.distance:
@@ -45,9 +45,11 @@ for i, t in enumerate(templates):
     good_matches_all.append(good_matches_obj)
 
 #Draw matches on the image
+img_matches = img_scene
+
 for i, t in enumerate(templates):
-    img_matches = np.empty((max(templates[i].image.shape[0], img_scene.shape[0]), templates[i].image.shape[1]+img_scene.shape[1], 3), dtype=np.uint8)
-    cv.drawMatches(templates[i].image, keypoints_templates[i], img_scene, keypoints_scene, good_matches_all[i], img_matches, flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+    #img_matches = np.empty((max(templates[i].image.shape[0], img_scene.shape[0]), templates[i].image.shape[1]+img_scene.shape[1], 3), dtype=np.uint8)
+    #cv.drawMatches(templates[i].image, keypoints_templates[i], img_scene, keypoints_scene, good_matches_all[i], img_matches, flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
     
     #stop flags
     good_matches = good_matches_all[i]
@@ -68,18 +70,12 @@ for i, t in enumerate(templates):
             obj[z,1] = (keypoints_templates[i])[good_matches[z].queryIdx].pt[1]
             scene[z,0] = keypoints_scene[good_matches[z].trainIdx].pt[0]
             scene[z,1] = keypoints_scene[good_matches[z].trainIdx].pt[1]
-        H, inliers_mask =  cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
+        H, inliers_mask =  cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=4)
         # H homography from template to scene
 
         #Take points from the scene that fits with the homography
-        img_instance_matches = np.empty((max(templates[i].image.shape[0], img_scene.shape[0]), templates[i].image.shape[1]+img_scene.shape[1], 3), dtype=np.uint8)
         mask = (inliers_mask[:]==[0])
         instance_good_matches = ma.masked_array(good_matches, mask=mask).compressed()
-
-        #Remove inliers from good matches array
-        new_good_matches = np.asarray(list(set(good_matches)-set(instance_good_matches)))
-        good_matches = new_good_matches
-        newSize = len(good_matches)
 
         ### Show matches fitting the found homography
         #cv.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, instance_good_matches, img_instance_matches, flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
@@ -99,28 +95,40 @@ for i, t in enumerate(templates):
         obj_corners[3,0,1] = templates[i].image.shape[0]
 
         try:
-            #Check for degenerate homography
-            valid = True
-            for k in range(0, len(obj_corners)):
-                x = obj_corners[k,0,0]
-                y = obj_corners[k,0,1]
-                if (H[2][0]*x + H[2][1]*y + H[2][2]) / np.linalg.det(H) <= 0:
-                    valid = False
+            if len(instance_good_matches) > 10:
+                #Check for degenerate homography
+                valid = True
+                for k in range(0, len(obj_corners)):
+                    x = obj_corners[k,0,0]
+                    y = obj_corners[k,0,1]
+                    if (H[2][0]*x + H[2][1]*y + H[2][2]) / np.linalg.det(H) <= 0:
+                        valid = False
 
-            #Draw lines between the corners
-            scene_corners = cv.perspectiveTransform(obj_corners, H)
+                if(valid):
+                    #Remove inliers from good matches array
+                    new_good_matches = np.asarray(list(set(good_matches)-set(instance_good_matches)))
+                    good_matches = new_good_matches
+                    newSize = len(good_matches)
+                else:
+                    random.shuffle(good_matches)
+                    newSize = len(good_matches)
 
-            #Draw Bounding box on the image
-            if valid:
-                cv.line(img_matches, (int(scene_corners[0,0,0] + templates[i].image.shape[1]), int(scene_corners[0,0,1])),\
-                    (int(scene_corners[1,0,0] + templates[i].image.shape[1]), int(scene_corners[1,0,1])), (0,255,0), 4)
-                cv.line(img_matches, (int(scene_corners[1,0,0] + templates[i].image.shape[1]), int(scene_corners[1,0,1])),\
-                    (int(scene_corners[2,0,0] + templates[i].image.shape[1]), int(scene_corners[2,0,1])), (0,255,0), 4)
-                cv.line(img_matches, (int(scene_corners[2,0,0] + templates[i].image.shape[1]), int(scene_corners[2,0,1])),\
-                    (int(scene_corners[3,0,0] + templates[i].image.shape[1]), int(scene_corners[3,0,1])), (0,255,0), 4)
-                cv.line(img_matches, (int(scene_corners[3,0,0] + templates[i].image.shape[1]), int(scene_corners[3,0,1])),\
-                    (int(scene_corners[0,0,0] + templates[i].image.shape[1]), int(scene_corners[0,0,1])), (0,255,0), 4)
-
+                #Draw Bounding box on the image
+                if valid:
+                     #Draw lines between the corners
+                    scene_corners = cv.perspectiveTransform(obj_corners, H)
+                    cv.line(img_matches, (int(scene_corners[0,0,0] ), int(scene_corners[0,0,1])),\
+                        (int(scene_corners[1,0,0] ), int(scene_corners[1,0,1])), (200,255*(i%2),255*(i%3)), 4)
+                    cv.line(img_matches, (int(scene_corners[1,0,0]), int(scene_corners[1,0,1])),\
+                        (int(scene_corners[2,0,0] ), int(scene_corners[2,0,1])), (200,255*(i%2),255*(i%3)), 4)
+                    cv.line(img_matches, (int(scene_corners[2,0,0]), int(scene_corners[2,0,1])),\
+                        (int(scene_corners[3,0,0] ), int(scene_corners[3,0,1])), (200,255*(i%2),255*(i%3)), 4)
+                    cv.line(img_matches, (int(scene_corners[3,0,0]), int(scene_corners[3,0,1])),\
+                        (int(scene_corners[0,0,0] ), int(scene_corners[0,0,1])), (200,255*(i%2),255*(i%3)), 4)
+            else:
+                new_good_matches = np.asarray(list(set(good_matches)-set(instance_good_matches)))
+                good_matches = new_good_matches
+                newSize = len(good_matches)
         except:
             print("Cannot draw bounding box")
             print(H)
@@ -129,7 +137,6 @@ for i, t in enumerate(templates):
         
 
      ### End Sequential RANSAC
-     #Show detected matches
-    cv.imshow('Good Matches', img_matches)
-    cv.imwrite("output" + str(i) + ".jpg", img_matches)
-    cv.waitKey()
+
+#Show detected matches
+cv.imwrite("output.jpg", img_matches)

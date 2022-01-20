@@ -3,12 +3,12 @@ import numpy as np
 import argparse
 import numpy.ma as ma
 
-img_scene = cv.imread("Test/Test1.jpg", cv.IMREAD_GRAYSCALE)
-img_object = cv.imread("Templates/MrRiceTemplateCrop.jpg", cv.IMREAD_GRAYSCALE)
+img_scene = cv.imread("Test/test_image.jpg", cv.IMREAD_GRAYSCALE)
+img_object = cv.imread("Templates/a_kellogs.png", cv.IMREAD_GRAYSCALE)
 
 #Detect the keypoints using SURF Detector, compute the descriptors
 minHessian = 400
-detector = cv.xfeatures2d_SURF.create(hessianThreshold=minHessian)
+detector = cv.xfeatures2d_SIFT.create()
 keypoints_obj, descriptors_obj = detector.detectAndCompute(img_object, None)
 keypoints_scene, descriptors_scene = detector.detectAndCompute(img_scene, None)
 
@@ -17,7 +17,7 @@ matcher = cv.DescriptorMatcher_create(cv.DescriptorMatcher_FLANNBASED)
 knn_matches = matcher.knnMatch(descriptors_obj, descriptors_scene, 2)
 
 #Filter matches using the Lowe's ratio test
-ratio_thresh = 0.75
+ratio_thresh = 0.82
 good_matches = []
 for m,n in knn_matches:
     if m.distance < ratio_thresh * n.distance:
@@ -108,4 +108,3 @@ while(newSize != oldSize and len(good_matches) >= 4):
 #Show detected matches
 cv.imshow('Good Matches', img_matches)
 cv.imwrite("output.jpg", img_matches)
-cv.waitKey()

@@ -18,7 +18,7 @@ templates = []
 for f in template_files:
     templates.append(Template("Templates/" + str(f)))
 
-img_scene = cv.imread("Test/test_image.jpg")
+img_scene = cv.imread("Test/eh.jpeg")
 
 #Compute keypoints and descriptors
 keypoints_templates = []
@@ -55,6 +55,12 @@ for i, t in enumerate(templates):
     oldSize = len(good_matches)
     newSize = -1
     j = 0
+
+    #Random color
+    r = random.randint(0,255)
+    g = random.randint(0,255)
+    b = random.randint(0,255)
+    color = (r,g,b)
 
     ###Sequential RANSAC
     while(newSize != oldSize and len(good_matches) >= 4):
@@ -118,13 +124,13 @@ for i, t in enumerate(templates):
                     #Draw lines between the corners
                     scene_corners = cv.perspectiveTransform(obj_corners, H)
                     cv.line(img_matches, (int(scene_corners[0,0,0] ), int(scene_corners[0,0,1])),\
-                        (int(scene_corners[1,0,0] ), int(scene_corners[1,0,1])), (200,255*(i%2),255*(i%3)), 4)
+                        (int(scene_corners[1,0,0] ), int(scene_corners[1,0,1])), color, 4)
                     cv.line(img_matches, (int(scene_corners[1,0,0]), int(scene_corners[1,0,1])),\
-                        (int(scene_corners[2,0,0] ), int(scene_corners[2,0,1])), (200,255*(i%2),255*(i%3)), 4)
+                        (int(scene_corners[2,0,0] ), int(scene_corners[2,0,1])), color, 4)
                     cv.line(img_matches, (int(scene_corners[2,0,0]), int(scene_corners[2,0,1])),\
-                        (int(scene_corners[3,0,0] ), int(scene_corners[3,0,1])), (200,255*(i%2),255*(i%3)), 4)
+                        (int(scene_corners[3,0,0] ), int(scene_corners[3,0,1])), color, 4)
                     cv.line(img_matches, (int(scene_corners[3,0,0]), int(scene_corners[3,0,1])),\
-                        (int(scene_corners[0,0,0] ), int(scene_corners[0,0,1])), (200,255*(i%2),255*(i%3)), 4)
+                        (int(scene_corners[0,0,0] ), int(scene_corners[0,0,1])), color, 4)
                 else:
                     random.shuffle(good_matches)
                     newSize = len(good_matches)

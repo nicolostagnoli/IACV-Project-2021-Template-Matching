@@ -3,11 +3,11 @@ import numpy as np
 import argparse
 import numpy.ma as ma
 
-img_scene = cv.imread("Test/test_image.jpg", cv.IMREAD_GRAYSCALE)
-img_object = cv.imread("Templates/a_kellogs.png", cv.IMREAD_GRAYSCALE)
+img_scene = cv.imread("Test/eh.jpeg")
+img_object = cv.imread("Templates/barchette.png")
 
 #Detect the keypoints using SURF Detector, compute the descriptors
-minHessian = 400
+minHessian = 1
 detector = cv.xfeatures2d_SIFT.create()
 keypoints_obj, descriptors_obj = detector.detectAndCompute(img_object, None)
 keypoints_scene, descriptors_scene = detector.detectAndCompute(img_scene, None)
@@ -44,7 +44,7 @@ while(newSize != oldSize and len(good_matches) >= 4):
         obj[i,1] = keypoints_obj[good_matches[i].queryIdx].pt[1]
         scene[i,0] = keypoints_scene[good_matches[i].trainIdx].pt[0]
         scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
-    H, mask =  cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
+    H, mask =  cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=30)
     # H homography from template to scene
 
     #Take points from the scene that fits with the homography

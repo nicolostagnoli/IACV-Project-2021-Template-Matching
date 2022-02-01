@@ -18,7 +18,7 @@ templates = []
 for f in template_files:
     templates.append(Template("Templates3/" + str(f)))
 
-img_scene = cv.imread("Test/scaffale.jpg")
+img_scene = cv.imread("Test/eh.jpeg")
 
 #Compute keypoints and descriptors
 keypoints_templates = []
@@ -38,7 +38,7 @@ for i, t in enumerate(templates):
     knn_matches = matcher.knnMatch(descriptors_templates[i], descriptors_scene, 2)
 
     #Filter matches using the Lowe's ratio test
-    ratio_thresh = 0.7
+    ratio_thresh = 0.5
     good_matches_obj = []
     for m,n in knn_matches:
         if m.distance < ratio_thresh * n.distance:

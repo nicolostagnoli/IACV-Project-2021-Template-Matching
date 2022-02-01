@@ -4,8 +4,8 @@ import argparse
 import numpy.ma as ma
 from customRansac import customFindHomography
 
-img_scene = cv.imread("Test/scaffale.jpg")
-img_object = cv.imread("Templates3/cocoa.png")
+img_scene = cv.imread("Test/eh.jpeg")
+img_object = cv.imread("Templates3/barchette.png")
 
 #Detect the keypoints using SURF Detector, compute the descriptors
 minHessian = 1
@@ -18,7 +18,7 @@ matcher = cv.DescriptorMatcher_create(cv.DescriptorMatcher_FLANNBASED)
 knn_matches = matcher.knnMatch(descriptors_obj, descriptors_scene, 2)
 
 #Filter matches using the Lowe's ratio test
-ratio_thresh = 0.75
+ratio_thresh = 0.65
 good_matches = []
 for m,n in knn_matches:
     if m.distance < ratio_thresh * n.distance:

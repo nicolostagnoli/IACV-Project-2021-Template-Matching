@@ -4,7 +4,7 @@ import argparse
 import numpy.ma as ma
 import os
 import random
-
+from customRansac import customFindHomography
 from Template import Template
 
 #Detect the keypoints using SIFT/SURF Detector, compute the descriptors
@@ -63,7 +63,7 @@ for i, t in enumerate(templates):
     color = (r,g,b)
 
     ###Sequential RANSAC
-    while(newSize != oldSize and len(good_matches) >= 4):
+    while((oldSize > newSize +10)  or newSize == -1) and len(good_matches) >= 4):
         oldSize = len(good_matches)
 
         #Localize the object
@@ -75,9 +75,9 @@ for i, t in enumerate(templates):
             obj[z,1] = (keypoints_templates[i])[good_matches[z].queryIdx].pt[1]
             scene[z,0] = keypoints_scene[good_matches[z].trainIdx].pt[0]
             scene[z,1] = keypoints_scene[good_matches[z].trainIdx].pt[1]
-        H, inliers_mask =  cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=10)
+        H, inliers_mask =  customFindHomography(obj,scene,0.6)
         # H homography from template to scene
-
+        H = np.asarray(H)
         #Take points from the scene that fits with the homography
         mask = (inliers_mask[:]==[0])
         instance_good_matches = ma.masked_array(good_matches, mask=mask).compressed()

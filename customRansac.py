@@ -42,8 +42,10 @@ def geometricDistance(correspondence, h):
 
     p1 = np.transpose(np.matrix([correspondence[0].item(0), correspondence[0].item(1), 1]))
     estimatep2 = np.dot(h, p1)
-    estimatep2 = (1/estimatep2.item(2))*estimatep2
-
+    if (estimatep2.item(2) != 0):
+        estimatep2 = (1/estimatep2.item(2))*estimatep2
+    else:
+        return 1000
     p2 = np.transpose(np.matrix([correspondence[0].item(2), correspondence[0].item(3), 1]))
     error = p2 - estimatep2
     return np.linalg.norm(error)

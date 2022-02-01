@@ -67,7 +67,7 @@ def customFindHomography(obj,scene, thresh):
     maxInliers = []
     finalH = None
     finalMask = np.zeros(shape = (len(obj[:,0])) )
-    for i in range(300):
+    for i in range(600):
 
         mask = np.zeros(shape = (len(obj[:,0])) )
 

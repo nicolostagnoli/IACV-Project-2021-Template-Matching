@@ -45,6 +45,7 @@ while(oldSize != newSize and len(good_matches) >= 4):
         obj[i,1] = keypoints_obj[good_matches[i].queryIdx].pt[1]
         scene[i,0] = keypoints_scene[good_matches[i].trainIdx].pt[0]
         scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
+    #cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
     H, mask =  customFindHomography(obj,scene,0.6)
     # H homography from template to scene
     H = np.asarray(H)

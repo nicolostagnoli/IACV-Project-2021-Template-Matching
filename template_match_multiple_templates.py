@@ -75,6 +75,7 @@ for i, t in enumerate(templates):
             obj[z,1] = (keypoints_templates[i])[good_matches[z].queryIdx].pt[1]
             scene[z,0] = keypoints_scene[good_matches[z].trainIdx].pt[0]
             scene[z,1] = keypoints_scene[good_matches[z].trainIdx].pt[1]
+        #cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
         H, inliers_mask =  customFindHomography(obj,scene,0.6)
         # H homography from template to scene
         H = np.asarray(H)

@@ -18,7 +18,7 @@ templates = []
 for f in template_files:
     templates.append(Template("Templates/" + str(f)))
 
-img_scene = cv.imread("Test/test_image.jpg")
+img_scene = cv.imread("Test/eh.jpeg")
 
 #Compute keypoints and descriptors
 keypoints_templates = []
@@ -63,7 +63,7 @@ for i, t in enumerate(templates):
     color = (r,g,b)
 
     ###Sequential RANSAC
-    while((oldSize > newSize +10)  or newSize == -1) and len(good_matches) >= 4):
+    while(((oldSize > newSize +10)  or newSize == -1) and len(good_matches) >= 4):
         oldSize = len(good_matches)
 
         #Localize the object

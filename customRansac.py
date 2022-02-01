@@ -87,7 +87,7 @@ def customFindHomography(obj,scene, thresh):
 
         for i in range(len(corr)):
             d = geometricDistance(corr[i], h)
-            if d < 5:
+            if d < 3:
                 inliers.append(corr[i])
                 mask[i] = 1
                 

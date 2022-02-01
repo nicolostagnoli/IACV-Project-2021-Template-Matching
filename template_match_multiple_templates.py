@@ -18,7 +18,7 @@ templates = []
 for f in template_files:
     templates.append(Template("Templates3/" + str(f)))
 
-img_scene = cv.imread("Test/eh.jpeg")
+img_scene = cv.imread("Test/2_Color.png")
 
 #Compute keypoints and descriptors
 keypoints_templates = []
@@ -38,7 +38,7 @@ for i, t in enumerate(templates):
     knn_matches = matcher.knnMatch(descriptors_templates[i], descriptors_scene, 2)
 
     #Filter matches using the Lowe's ratio test
-    ratio_thresh = 0.5
+    ratio_thresh = 0.8
     good_matches_obj = []
     for m,n in knn_matches:
         if m.distance < ratio_thresh * n.distance:
@@ -76,20 +76,13 @@ for i, t in enumerate(templates):
             scene[z,0] = keypoints_scene[good_matches[z].trainIdx].pt[0]
             scene[z,1] = keypoints_scene[good_matches[z].trainIdx].pt[1]
         #cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
-        H, inliers_mask =  customFindHomography(obj,scene,0.6)
+        H, inliers_mask =  customFindHomography(obj,scene,0.7)
         # H homography from template to scene
         H = np.asarray(H)
         #Take points from the scene that fits with the homography
         mask = (inliers_mask[:]==[0])
         instance_good_matches = ma.masked_array(good_matches, mask=mask).compressed()
 
-        ### Show matches fitting the found homography
-        #img_instance_matches = np.empty((max(templates[i].image.shape[0], img_scene.shape[0]), templates[i].image.shape[1]+img_scene.shape[1], 3), dtype=np.uint8)
-        #cv.drawMatches(templates[i].image, keypoints_obj, img_scene, keypoints_scene, instance_good_matches, img_instance_matches, flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-        #cv.imshow('Good Matches - 1 instance', img_instance_matches)
-        #cv.imwrite("output_mask" + str(j) + ".jpg", img_instance_matches)
-        #j += 1
-        #cv.waitKey()
 
         #Get the corners from the template
         obj_corners = np.empty((4,1,2), dtype=np.float32)

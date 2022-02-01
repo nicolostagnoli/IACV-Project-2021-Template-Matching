@@ -13,12 +13,12 @@ minHessian = 400
 detector = cv.xfeatures2d_SIFT.create()
 
 #Read all templates
-template_files = os.listdir("Templates")
+template_files = os.listdir("Templates3")
 templates = []
 for f in template_files:
-    templates.append(Template("Templates/" + str(f)))
+    templates.append(Template("Templates3/" + str(f)))
 
-img_scene = cv.imread("Test/eh.jpeg")
+img_scene = cv.imread("Test/scaffale.jpg")
 
 #Compute keypoints and descriptors
 keypoints_templates = []
@@ -38,7 +38,7 @@ for i, t in enumerate(templates):
     knn_matches = matcher.knnMatch(descriptors_templates[i], descriptors_scene, 2)
 
     #Filter matches using the Lowe's ratio test
-    ratio_thresh = 0.82
+    ratio_thresh = 0.7
     good_matches_obj = []
     for m,n in knn_matches:
         if m.distance < ratio_thresh * n.distance:
@@ -63,7 +63,7 @@ for i, t in enumerate(templates):
     color = (r,g,b)
 
     ###Sequential RANSAC
-    while(((oldSize > newSize +10)  or newSize == -1) and len(good_matches) >= 4):
+    while(newSize != oldSize  and len(good_matches) >= 4):
         oldSize = len(good_matches)
 
         #Localize the object

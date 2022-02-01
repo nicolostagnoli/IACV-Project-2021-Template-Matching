@@ -2,9 +2,10 @@ import cv2 as cv
 import numpy as np
 import argparse
 import numpy.ma as ma
+from customRansac import customFindHomography
 
-img_scene = cv.imread("Test/eh.jpeg")
-img_object = cv.imread("Templates/barchette.png")
+img_scene = cv.imread("Test/scaffale.jpg")
+img_object = cv.imread("Templates3/cocoa.png")
 
 #Detect the keypoints using SURF Detector, compute the descriptors
 minHessian = 1
@@ -17,7 +18,7 @@ matcher = cv.DescriptorMatcher_create(cv.DescriptorMatcher_FLANNBASED)
 knn_matches = matcher.knnMatch(descriptors_obj, descriptors_scene, 2)
 
 #Filter matches using the Lowe's ratio test
-ratio_thresh = 0.82
+ratio_thresh = 0.75
 good_matches = []
 for m,n in knn_matches:
     if m.distance < ratio_thresh * n.distance:
@@ -32,7 +33,7 @@ newSize = -1
 j = 0
 
 ###Sequential RANSAC
-while(newSize != oldSize and len(good_matches) >= 4):
+while(oldSize != newSize and len(good_matches) >= 4):
     oldSize = len(good_matches)
 
     #Localize the object
@@ -44,9 +45,9 @@ while(newSize != oldSize and len(good_matches) >= 4):
         obj[i,1] = keypoints_obj[good_matches[i].queryIdx].pt[1]
         scene[i,0] = keypoints_scene[good_matches[i].trainIdx].pt[0]
         scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
-    H, mask =  cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=30)
+    H, mask =  customFindHomography(obj,scene,0.6)
     # H homography from template to scene
-
+    H = np.asarray(H)
     #Take points from the scene that fits with the homography
     img_instance_matches = np.empty((max(img_object.shape[0], img_scene.shape[0]), img_object.shape[1]+img_scene.shape[1], 3), dtype=np.uint8)
     maskk = (mask[:]==[0])

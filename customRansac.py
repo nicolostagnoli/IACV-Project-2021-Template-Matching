@@ -54,6 +54,8 @@ def geometricDistance(correspondence, h):
 #Runs through ransac algorithm, creating homographies from random correspondences
 #
 def customFindHomography(obj,scene, thresh):
+
+    random.seed(1234)
     
     correspondenceList = []
 

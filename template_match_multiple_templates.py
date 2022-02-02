@@ -18,7 +18,7 @@ templates = []
 for f in template_files:
     templates.append(Template("Templates3/" + str(f)))
 
-img_scene = cv.imread("Test/eh.jpeg")
+img_scene = cv.imread("3D/1/rgb_image.jpg")
 
 #Compute keypoints and descriptors
 keypoints_templates = []

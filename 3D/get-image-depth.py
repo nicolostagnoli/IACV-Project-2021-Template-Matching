@@ -6,11 +6,13 @@
 #####################################################
 
 # First import the library
+from turtle import color
 import pyrealsense2 as rs
 # Import Numpy for easy array manipulation
 import numpy as np
 # Import OpenCV for easy image rendering
 import cv2
+from PIL import Image
 import os
 
 # Create a pipeline
@@ -95,11 +97,9 @@ try:
 
         cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)
         cv2.imshow('Align Example', images)
-        key = cv2.waitKey(1)
-        # Press esc or 'q' to close the image window
-        if key & 0xFF == ord('q') or key == 27:
-            cv2.destroyAllWindows()
-            break
+        
+        
+        
 
         ##########################
 
@@ -112,10 +112,24 @@ try:
 
         mat = mat.transpose()
         print(mat)
+        print("Depth frame width:")
         print(aligned_depth_frame.width)
+        print("Depth frame height:")
         print(aligned_depth_frame.height)
+        print("/////////////////////")
+        print("color frame width: ")
+        print(color_frame.width)
+        print("Color frame height:")
+        print(color_frame.height)
+        cv2.imwrite("rgb_image.jpg",color_image)
+        cv2.imwrite("depth_image.jpg",depth_image)
+
+        #imDepth = Image.fromarray(depth_image)
+        #imDepth.save("depth_image.jpeg")
 
         np.save(f"Dump\mat.npy", mat)
+
+        key = cv2.waitKey(-1)
         #np.savez(f"Dump\depthFrame", aligned_depth_frame)
 
 finally:

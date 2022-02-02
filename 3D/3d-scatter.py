@@ -1,9 +1,10 @@
+#https://github.com/cboots/RGBD-to-Mesh/blob/master/algorithm-python/point_cloud.py
+
 from __future__ import division
 from __future__ import print_function
 from matplotlib import pyplot as plt
 import matplotlib.image as img
 
-print("Loading libraries...")
 import numpy as np
 from numpy import tan, pi
 
@@ -17,13 +18,13 @@ from matplotlib.patches import FancyArrowPatch
 from mpl_toolkits.mplot3d import proj3d
 """
 
-FOV_Y = 57 # degrees
-FOV_X = 86
+FOV_Y = 65 # degrees
+FOV_X = 92
 
 SCALE_Y = tan((FOV_Y/2)*pi/180)
 SCALE_X = tan((FOV_X/2)*pi/180)
 
-POINT_STRIDE = 1
+POINT_STRIDE = 4
 NORMAL_STRIDE = 8
 
 ARROW_LENGTH = 0.08
@@ -33,18 +34,20 @@ RAD_NN = 0.05
 MIN_NN = int((2*RAD_WIN+1)*0.5)
 
 if __name__ == '__main__':
-    size_x = 848
+    size_x = 640
     size_y = 480
 
-    mat = np.load("3D/Photo1/mat.npy")
-    mat = mat.transpose()
-    scene = img.imread('3D/Photo1/1_Color.png')
+    mat = np.load("1/mat.npy")
+    scene = img.imread('1/rgb_image.jpg')
+
+    print(len(mat))
+    print(len(mat[0]))
 
     # load RGBD data and convert to float
     rgb_data = scene.reshape([size_y, size_x, 3])
-    rgb_data = np.float32(rgb_data) # convert to 0-1
+    rgb_data = np.float32(rgb_data/255) # convert to 0-1
     depth_data = mat.reshape([size_y, size_x])
-    depth_data = np.float32(depth_data)/1000
+    depth_data = np.float32(depth_data)
     # build point cloud
     point_cloud = np.zeros((size_y, size_x, 3), dtype=np.float32)
     point_colors = np.zeros((size_y, size_x, 3), dtype=np.float32)
@@ -138,6 +141,7 @@ if __name__ == '__main__':
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
+    #ax = plt.Axes3D()
     ax.scatter(point_cloud[:,0], point_cloud[:,1], point_cloud[:,2], 'o', c=point_colors, s=5, lw=0)
     ax.invert_yaxis()
     ax.elev = -90
@@ -145,6 +149,10 @@ if __name__ == '__main__':
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_zlabel('z')
+    ax.set_xlim3d(1, -1)
+    ax.set_ylim3d(-1, 1)
+    ax.set_zlim3d(-1, 1)
+    ax.set_aspect('auto')
     #imgplot = plt.imshow(depth_data>>5, cmap=cm.Greys_r)
     #plt.show()
     plt.show()

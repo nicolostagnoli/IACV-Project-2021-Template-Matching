@@ -4,8 +4,8 @@ import argparse
 import numpy.ma as ma
 from customRansac import customFindHomography
 
-img_scene = cv.imread("Test/eh.jpeg")
-img_object = cv.imread("Templates3/barchette.png")
+img_scene = cv.imread("Test/2_Color.png")
+img_object = cv.imread("Templates3/barchette_intera.jpg")
 
 #Detect the keypoints using SURF Detector, compute the descriptors
 minHessian = 1
@@ -18,7 +18,7 @@ matcher = cv.DescriptorMatcher_create(cv.DescriptorMatcher_FLANNBASED)
 knn_matches = matcher.knnMatch(descriptors_obj, descriptors_scene, 2)
 
 #Filter matches using the Lowe's ratio test
-ratio_thresh = 0.65
+ratio_thresh = 0.75
 good_matches = []
 for m,n in knn_matches:
     if m.distance < ratio_thresh * n.distance:
@@ -33,7 +33,7 @@ newSize = -1
 j = 0
 
 ###Sequential RANSAC
-while(oldSize != newSize and len(good_matches) >= 4):
+while((oldSize != newSize) and len(good_matches) >= 4):
     oldSize = len(good_matches)
 
     #Localize the object
@@ -46,7 +46,7 @@ while(oldSize != newSize and len(good_matches) >= 4):
         scene[i,0] = keypoints_scene[good_matches[i].trainIdx].pt[0]
         scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
     #cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
-    H, mask =  customFindHomography(obj,scene,0.6)
+    H, mask =  customFindHomography(obj,scene,0.7)
     # H homography from template to scene
     H = np.asarray(H)
     #Take points from the scene that fits with the homography
@@ -90,6 +90,7 @@ while(oldSize != newSize and len(good_matches) >= 4):
 
         #Draw Bounding box on the image
         if valid:
+            print("-------------------------------DRAWING BOX----------------------------------------")
             cv.line(img_matches, (int(scene_corners[0,0,0] + img_object.shape[1]), int(scene_corners[0,0,1])),\
                 (int(scene_corners[1,0,0] + img_object.shape[1]), int(scene_corners[1,0,1])), (0,255,0), 4)
             cv.line(img_matches, (int(scene_corners[1,0,0] + img_object.shape[1]), int(scene_corners[1,0,1])),\

@@ -106,7 +106,9 @@ def customFindHomography(obj,scene, thresh):
             break
 
     return finalH, finalMask;
-
+#
+#Finds plane through 3 points
+#
 def planeThroughPoints(p1, p2, p3):
     # These two vectors are in the plane
     v1 = p3 - p1
@@ -116,18 +118,18 @@ def planeThroughPoints(p1, p2, p3):
     cp = np.cross(v1, v2)
     a, b, c = cp
 
-    # This evaluates a * x3 + b * y3 + c * z3 which equals d
-    d = np.dot(cp, p3)
-    normal = cp
+    # This evaluates a * x3 + b * y3 + c * z3 which equals -d
+    d = - np.dot(cp, p3)
+    plane_normal = cp
     plane = [a, b, c, d]
 
-    return normal, plane
+    return plane_normal, plane
 
-def pointPlaneDistance(normal, point):
-    a = normal[0]
-    b = normal[1]
-    c = normal[2]
-    d = normal[3]
+def pointPlaneDistance(plane, point):
+    a = plane[0]
+    b = plane[1]
+    c = plane[2]
+    d = plane[3]
     x0 = point[0]
     y0 = point[1]
     z0 = point[2]

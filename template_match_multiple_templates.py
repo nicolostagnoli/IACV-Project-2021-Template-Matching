@@ -13,10 +13,10 @@ minHessian = 400
 detector = cv.xfeatures2d_SIFT.create()
 
 #Read all templates
-template_files = os.listdir("Templates3")
+template_files = os.listdir("Templates")
 templates = []
 for f in template_files:
-    templates.append(Template("Templates3/" + str(f)))
+    templates.append(Template("Templates/" + str(f)))
 
 img_scene = cv.imread("3D/1/rgb_image.jpg")
 

@@ -37,8 +37,8 @@ if __name__ == '__main__':
     size_x = 640
     size_y = 480
 
-    mat = np.load("1/mat.npy")
-    scene = img.imread('1/rgb_image.jpg')
+    mat = np.load("3D/1/mat.npy")
+    scene = img.imread('3D/1/rgb_image.jpg')
 
     print(len(mat))
     print(len(mat[0]))
@@ -109,6 +109,8 @@ if __name__ == '__main__':
                         normal = -normal
                     point_normals[r, c, :] = normal
             if print_condition: print("NN:", len(window_points))
+    #save point cloud
+    np.save(f"3D/1/pointCloud.npy", point_cloud);
     # thin out data for plotting
     point_normal_centers = point_cloud[::NORMAL_STRIDE, ::NORMAL_STRIDE, :]
     point_normals = point_normals[::NORMAL_STRIDE, ::NORMAL_STRIDE, :]

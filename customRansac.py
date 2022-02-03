@@ -107,3 +107,100 @@ def customFindHomography(obj,scene, thresh):
 
     return finalH, finalMask;
 
+def planeThroughPoints(p1, p2, p3):
+    # These two vectors are in the plane
+    v1 = p3 - p1
+    v2 = p2 - p1
+
+    # the cross product is a vector normal to the plane
+    cp = np.cross(v1, v2)
+    a, b, c = cp
+
+    # This evaluates a * x3 + b * y3 + c * z3 which equals d
+    d = np.dot(cp, p3)
+    normal = cp
+    plane = [a, b, c, d]
+
+    return normal, plane
+
+def pointPlaneDistance(normal, point):
+    a = normal[0]
+    b = normal[1]
+    c = normal[2]
+    d = normal[3]
+    x0 = point[0]
+    y0 = point[1]
+    z0 = point[2]
+    return np.abs(a*x0 + b*y0 + c*z0 + d) / np.sqrt(a**2 + b**2 + c**2)
+    
+
+def customFindHomography3D(obj, scene, point_cloud, thresh):
+
+    random.seed(1234)
+    
+    plane_error = 0.1
+
+    correspondenceList = []
+
+    for z in range(len(scene[:,0])):
+            (x1, y1) = obj[z,0] , obj[z,1]
+            (x2, y2) = scene[z,0] , scene[z,1]
+            correspondenceList.append([x1, y1, x2, y2])
+
+    corr = np.matrix(correspondenceList)
+
+    maxInliers = []
+    finalH = None
+    finalMask = np.zeros(shape = (len(obj[:,0])) )
+    for i in range(600):
+
+        mask = np.zeros(shape = (len(obj[:,0])) )
+
+        #find 4 random points to calculate a homography
+        point_on_plane = False
+        while(not point_on_plane):
+            corr1 = corr[random.randrange(0, len(corr))]
+            corr2 = corr[random.randrange(0, len(corr))]
+            randomFour = np.vstack((corr1, corr2))
+            corr3 = corr[random.randrange(0, len(corr))]
+            randomFour = np.vstack((randomFour, corr3))
+            corr4 = corr[random.randrange(0, len(corr))]
+            randomFour = np.vstack((randomFour, corr4))
+
+            plane_normal, plane = planeThroughPoints(point_cloud[int(corr1[0, 3]), int(corr1[0, 2])],
+                point_cloud[int(corr2[0, 3]), int(corr2[0, 2])], 
+                point_cloud[int(corr3[0, 3]), int(corr3[0, 2])])
+
+            point4 = point_cloud[int(corr4[0, 3]), int(corr4[0, 2])]
+            distance = pointPlaneDistance(plane, point4)
+            if(distance < plane_error):
+                point_on_plane = True;
+                print("Plane found")
+            #else:
+            #    print("plane not found")
+
+        #call the homography function on those points
+        h = calculateHomography(randomFour)
+        inliers = []
+        
+
+        for i in range(len(corr)):
+            d = geometricDistance(corr[i], h)
+            if d < 3:
+                inliers.append(corr[i])
+                mask[i] = 1
+                
+
+        if len(inliers) > len(maxInliers):
+            
+            maxInliers = inliers
+            finalH = h
+            finalMask = mask
+
+        print ("Corr size: ", len(corr), " NumInliers: ", len(inliers), "Max inliers: ", len(maxInliers))
+
+        if len(maxInliers) > (len(corr)*thresh):
+            break
+
+    return finalH, finalMask;
+

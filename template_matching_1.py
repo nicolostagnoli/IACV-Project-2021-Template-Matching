@@ -3,9 +3,11 @@ import numpy as np
 import argparse
 import numpy.ma as ma
 from customRansac import customFindHomography
+from customRansac import customFindHomography3D
 
-img_scene = cv.imread("Test/2_Color.png")
+img_scene = cv.imread("3D/1/rgb_image.jpg")
 img_object = cv.imread("Templates3/barchette_intera.jpg")
+point_cloud = np.load("3D/1/pointCloud.npy") #[height][width][xyz]
 
 #Detect the keypoints using SURF Detector, compute the descriptors
 minHessian = 1
@@ -46,7 +48,7 @@ while((oldSize != newSize) and len(good_matches) >= 4):
         scene[i,0] = keypoints_scene[good_matches[i].trainIdx].pt[0]
         scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
     #cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
-    H, mask =  customFindHomography(obj,scene,0.7)
+    H, mask =  customFindHomography3D(obj, scene, point_cloud, 0.7)
     # H homography from template to scene
     H = np.asarray(H)
     #Take points from the scene that fits with the homography

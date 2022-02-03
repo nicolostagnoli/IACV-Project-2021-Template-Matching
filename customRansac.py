@@ -100,7 +100,7 @@ def customFindHomography(obj,scene, thresh):
             finalH = h
             finalMask = mask
 
-        print ("Corr size: ", len(corr), " NumInliers: ", len(inliers), "Max inliers: ", len(maxInliers))
+        #print ("Corr size: ", len(corr), " NumInliers: ", len(inliers), "Max inliers: ", len(maxInliers))
 
         if len(maxInliers) > (len(corr)*thresh):
             break
@@ -177,9 +177,9 @@ def customFindHomography3D(obj, scene, point_cloud, thresh):
             distance = pointPlaneDistance(plane, point4)
             if(distance < plane_error):
                 point_on_plane = True;
-                print("Plane found")
+                #print("################################Plane found#####################################")
             #else:
-            #    print("plane not found")
+                #print("------------------------------------------------------Plane not found----------------------------------------------------------")
 
         #call the homography function on those points
         h = calculateHomography(randomFour)
@@ -199,7 +199,7 @@ def customFindHomography3D(obj, scene, point_cloud, thresh):
             finalH = h
             finalMask = mask
 
-        print ("Corr size: ", len(corr), " NumInliers: ", len(inliers), "Max inliers: ", len(maxInliers))
+        #print ("Corr size: ", len(corr), " NumInliers: ", len(inliers), "Max inliers: ", len(maxInliers))
 
         if len(maxInliers) > (len(corr)*thresh):
             break

@@ -4,6 +4,7 @@ import argparse
 import numpy.ma as ma
 from customRansac import customFindHomography
 from customRansac import customFindHomography3D
+import time
 
 img_scene = cv.imread("3D/1/rgb_image.jpg")
 img_object = cv.imread("Templates3/barchette_intera.jpg")
@@ -47,8 +48,14 @@ while((oldSize != newSize) and len(good_matches) >= 4):
         obj[i,1] = keypoints_obj[good_matches[i].queryIdx].pt[1]
         scene[i,0] = keypoints_scene[good_matches[i].trainIdx].pt[0]
         scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
+
+    start = time.time()
     #cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
-    H, mask =  customFindHomography3D(obj, scene, point_cloud, 0.7)
+    H, mask =  customFindHomography(obj, scene, 0.7)
+    #H, mask =  customFindHomography3D(obj, scene, point_cloud, 0.7)
+    end = time.time()
+    print("time elapsed:")
+    print(end - start)
     # H homography from template to scene
     H = np.asarray(H)
     #Take points from the scene that fits with the homography

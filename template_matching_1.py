@@ -21,7 +21,7 @@ matcher = cv.DescriptorMatcher_create(cv.DescriptorMatcher_FLANNBASED)
 knn_matches = matcher.knnMatch(descriptors_obj, descriptors_scene, 2)
 
 #Filter matches using the Lowe's ratio test
-ratio_thresh = 0.75
+ratio_thresh = 0.9
 good_matches = []
 for m,n in knn_matches:
     if m.distance < ratio_thresh * n.distance:
@@ -35,6 +35,7 @@ oldSize = len(good_matches)
 newSize = -1
 j = 0
 
+start = time.time()
 ###Sequential RANSAC
 while((oldSize != newSize) and len(good_matches) >= 4):
     oldSize = len(good_matches)
@@ -49,13 +50,10 @@ while((oldSize != newSize) and len(good_matches) >= 4):
         scene[i,0] = keypoints_scene[good_matches[i].trainIdx].pt[0]
         scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
 
-    start = time.time()
+    
     #cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
-    H, mask =  customFindHomography(obj, scene, 0.7)
-    #H, mask =  customFindHomography3D(obj, scene, point_cloud, 0.7)
-    end = time.time()
-    print("time elapsed:")
-    print(end - start)
+    H, mask =  customFindHomography(obj, scene, 0.55)
+    #H, mask =  customFindHomography3D(obj, scene, point_cloud, 0.55)
     # H homography from template to scene
     H = np.asarray(H)
     #Take points from the scene that fits with the homography
@@ -116,6 +114,10 @@ while((oldSize != newSize) and len(good_matches) >= 4):
     j += 1
 
  ### End Sequential RANSAC
+
+end = time.time()
+print("time elapsed:")
+print(end - start)
 
 #Show detected matches
 cv.imshow('Good Matches', img_matches)

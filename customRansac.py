@@ -140,7 +140,7 @@ def customFindHomography3D(obj, scene, point_cloud, thresh):
 
     random.seed(1234)
     
-    plane_error = 0.1
+    plane_error = 0.01
 
     correspondenceList = []
 

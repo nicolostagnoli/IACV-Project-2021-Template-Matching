@@ -3,7 +3,7 @@ import numpy as np
 import argparse
 import numpy.ma as ma
 from customRansac import customFindHomography
-from customRansac import customFindHomography3D
+from customRansac import customFindHomographyPlane3D
 import time
 
 img_scene = cv.imread("3D/1/rgb_image.jpg")
@@ -52,8 +52,8 @@ while((oldSize != newSize) and len(good_matches) >= 4):
 
     
     #cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
-    H, mask =  customFindHomography(obj, scene, 0.55)
-    #H, mask =  customFindHomography3D(obj, scene, point_cloud, 0.55)
+    #H, mask =  customFindHomography(obj, scene, 0.55)
+    H, mask =  customFindHomographyPlane3D(obj, scene, point_cloud, 0.55)
     # H homography from template to scene
     H = np.asarray(H)
     #Take points from the scene that fits with the homography

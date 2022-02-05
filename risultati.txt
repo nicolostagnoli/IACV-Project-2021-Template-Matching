@@ -23,4 +23,5 @@ customFindHomographyNormalSampling3D, mettendo threshold=0.4 (ovviamente anche a
 e std_dev = 0.15 trova la box più vicina molto più velocemente (un ordine di grandezza più velocemente). 
 La seconda box la trova nello stesso tempo e, però, per concludersi ci mette di più. 
 Questo risultato è conforme con l’ipotesi secondo la quale il sampling che sfrutta l’informazione 3D velocizzi Ransac 
-quando c’è una distanza 3D importante tra i gruppi di feature della scena(come ci eravamo detti con Magri).
+quando c’è una distanza 3D importante tra i gruppi di feature della scena (come ci eravamo detti con Magri), infatti nel caso preso 
+in esame c'è una distanza in z significativa solo tra le feature della prima box e le altre.

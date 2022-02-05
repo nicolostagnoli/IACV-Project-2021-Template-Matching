@@ -210,18 +210,18 @@ def customFindHomographyPlane3D(obj, scene, point_cloud, thresh):
 #
 #returns the distance between the centralPoint and the 3d position of the correspondence's scene feature
 #
-def distance3D(corr, centralPoint, point_cloud):
+def distance3D(corr, point_sampled, point_cloud):
     p0 = point_cloud[int(corr[0, 3]), int(corr[0, 2])]
-    d = np.linalg.norm(centralPoint-p0)
+    d = np.linalg.norm(point_sampled-p0)
     return d;
 #
 #returning max distance and index of the max-distance element
 #
-def findMax(minDistanceThree, centralPoint, point_cloud):
+def findMax(minDistanceThree, point_sampled, point_cloud):
     max = 0
     maxIndex = 0
     for i in range(len(minDistanceThree)):
-        d = distance3D(minDistanceThree[i], centralPoint,point_cloud)
+        d = distance3D(minDistanceThree[i], point_sampled, point_cloud)
         if (d > max):
             max = d
             maxIndex = i
@@ -235,23 +235,25 @@ def normalSampling3D(corr, point_cloud, std_dev):
     #sampling with a uniform distribution the first match
     corr1 = corr[random.randrange(0, len(corr))]
     #taking the 3D position of the scene feature
-    centralPoint = point_cloud[int(corr1[0, 3]), int(corr1[0, 2])]
+    firstPoint = point_cloud[int(corr1[0, 3]), int(corr1[0, 2])]
     #sampling with normal distributions a point in space
-    xSample = np.random.normal(centralPoint[0],std_dev)
-    ySample = np.random.normal(centralPoint[1],std_dev)
-    zSample = np.random.normal(centralPoint[2],std_dev)
+    x_sampled = np.random.normal(firstPoint[0],std_dev)
+    y_sampled = np.random.normal(firstPoint[1],std_dev)
+    z_sampled = np.random.normal(firstPoint[2],std_dev)
+
+    point_sampled = [x_sampled,y_sampled,z_sampled]
     #storing the first three 3D corrs in a list
     minDistanceThree = [corr[0],corr[1],corr[2]]
 
-    #find the one with max distance from centralPoint
-    max, maxIndex = findMax(minDistanceThree, centralPoint,point_cloud)
+    #find the one with max distance from point_sampled
+    max, maxIndex = findMax(minDistanceThree, point_sampled,point_cloud)
 
     #for every element from k to n-1, if the element has smaller distance than max, leave out max and insert this element
     for c in corr[3:]:
-        if ( distance3D(c,centralPoint,point_cloud) < max) :
+        if ( distance3D(c,point_sampled,point_cloud) < max) :
             minDistanceThree[maxIndex] = c
-            #find the new one with max distance from centralPoint
-            max, maxIndex = findMax(minDistanceThree, centralPoint)
+            #find the new one with max distance from point_sampled
+            max, maxIndex = findMax(minDistanceThree, point_sampled,point_cloud)
 
     #Time Complexity: O((n-k)*k)
 

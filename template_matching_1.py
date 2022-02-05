@@ -1,14 +1,15 @@
 import cv2 as cv
 import numpy as np
-import argparse
 import numpy.ma as ma
 from customRansac import customFindHomography
 from customRansac import customFindHomographyPlane3D
+from customRansac import customFindHomographyNormalSampling3D
 import time
 
-img_scene = cv.imread("3D/1/rgb_image.jpg")
+
+img_scene = cv.imread("3D/avanti_dietro/rgb_image.jpg")
 img_object = cv.imread("Templates3/barchette_intera.jpg")
-point_cloud = np.load("3D/1/pointCloud.npy") #[height][width][xyz]
+point_cloud = np.load("3D/avanti_dietro/pointCloud.npy") #[height][width][xyz]
 
 #Detect the keypoints using SURF Detector, compute the descriptors
 minHessian = 1
@@ -21,7 +22,7 @@ matcher = cv.DescriptorMatcher_create(cv.DescriptorMatcher_FLANNBASED)
 knn_matches = matcher.knnMatch(descriptors_obj, descriptors_scene, 2)
 
 #Filter matches using the Lowe's ratio test
-ratio_thresh = 0.9
+ratio_thresh = 0.87
 good_matches = []
 for m,n in knn_matches:
     if m.distance < ratio_thresh * n.distance:
@@ -52,8 +53,9 @@ while((oldSize != newSize) and len(good_matches) >= 4):
 
     
     #cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
-    #H, mask =  customFindHomography(obj, scene, 0.55)
-    H, mask =  customFindHomographyPlane3D(obj, scene, point_cloud, 0.55)
+    #H, mask =  customFindHomography(obj, scene, 0.4)
+    #H, mask =  customFindHomographyPlane3D(obj, scene, point_cloud, 0.55)
+    H, mask = customFindHomographyNormalSampling3D(obj, scene, point_cloud,0.4, 0.1)
     # H homography from template to scene
     H = np.asarray(H)
     #Take points from the scene that fits with the homography
@@ -97,7 +99,11 @@ while((oldSize != newSize) and len(good_matches) >= 4):
 
         #Draw Bounding box on the image
         if valid:
+            end = time.time()
             print("-------------------------------DRAWING BOX----------------------------------------")
+            print("time elapsed:")
+            print(end - start)
+            
             cv.line(img_matches, (int(scene_corners[0,0,0] + img_object.shape[1]), int(scene_corners[0,0,1])),\
                 (int(scene_corners[1,0,0] + img_object.shape[1]), int(scene_corners[1,0,1])), (0,255,0), 4)
             cv.line(img_matches, (int(scene_corners[1,0,0] + img_object.shape[1]), int(scene_corners[1,0,1])),\

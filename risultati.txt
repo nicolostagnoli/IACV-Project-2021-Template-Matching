@@ -1,0 +1,26 @@
+Reimplementato sequential ransac per fare multimodel fitting con le omografie di un template
+
+Anche versione con più template in una volta
+
+Reimplementato ransac prendendo ispirazione da Jordan Hughes, UC Santa Barbara
+
+Aggiunto l’informazione 3D facendo acquisizioni con realsense e allineando rgb con depth
+
+Abbiamo scritto customfindHomography3D, che fa il check della coplanarità delle 4 feature scelte casualmente da ransac nella scena
+
+
+testandola abbiamo scoperto che:
+
+customFindHomographyPlane3D è più robusta di quella standard, soprattutto se si imposta come parametro threshold qualcosa
+di bassino tipo 0.55 e con tanti match (ho messo ratio test a 0.9 per tenere tante features). Velocità molto simili.
+
+
+Abbiamo scritto customFindHomographyNormalSampling3D
+
+testandola abbiamo scoperto che:
+
+customFindHomographyNormalSampling3D, mettendo threshold=0.4 (ovviamente anche alla custom standard per fare un paragone sensato) 
+e std_dev = 0.15 trova la box più vicina molto più velocemente (un ordine di grandezza più velocemente). 
+La seconda box la trova nello stesso tempo e, però, per concludersi ci mette di più. 
+Questo risultato è conforme con l’ipotesi secondo la quale il sampling che sfrutta l’informazione 3D velocizzi Ransac 
+quando c’è una distanza 3D importante tra i gruppi di feature della scena(come ci eravamo detti con Magri).

@@ -67,7 +67,7 @@ def customFindHomography(obj,scene, thresh):
     maxInliers = []
     finalH = None
     finalMask = np.zeros(shape = (len(obj[:,0])) )
-    for i in range(600):
+    for i in range(300):
 
         mask = np.zeros(shape = (len(obj[:,0])) )
 
@@ -101,6 +101,7 @@ def customFindHomography(obj,scene, thresh):
         #print ("Corr size: ", len(corr), " NumInliers: ", len(inliers), "Max inliers: ", len(maxInliers))
 
         if len(maxInliers) > (len(corr)*thresh):
+            
             break
 
     return finalH, finalMask;
@@ -155,7 +156,7 @@ def customFindHomographyPlane3D(obj, scene, point_cloud, thresh):
     maxInliers = []
     finalH = None
     finalMask = np.zeros(shape = (len(obj[:,0])) )
-    for i in range(600):
+    for i in range(300):
 
         mask = np.zeros(shape = (len(obj[:,0])) )
 
@@ -217,15 +218,16 @@ def distance3D(corr, point_sampled, point_cloud):
 #
 #returning max distance and index of the max-distance element
 #
-def findMax(minDistanceThree, point_sampled, point_cloud):
-    max = 0
-    maxIndex = 0
-    for i in range(len(minDistanceThree)):
-        d = distance3D(minDistanceThree[i], point_sampled, point_cloud)
-        if (d > max):
-            max = d
-            maxIndex = i
-    return max, maxIndex;
+def findMin(corr, point_sampled, point_cloud):
+    
+    min = 10000
+    minCorr = corr[0];
+    for c in corr:
+        d = distance3D(c, point_sampled, point_cloud)
+        if (d < min):
+            min = d
+            minCorr = c
+    return minCorr;
 #
 #Correspondances are sampled based on the 3D position of the scene features. First one is totally random, while the other 3 are sampled
 #through normal distributions on x,y,z. A random 3D point is sampled and then the 3 closest features on scene are found.
@@ -236,33 +238,26 @@ def normalSampling3D(corr, point_cloud, std_dev):
     corr1 = corr[random.randrange(0, len(corr))]
     #taking the 3D position of the scene feature
     firstPoint = point_cloud[int(corr1[0, 3]), int(corr1[0, 2])]
-    #sampling with normal distributions a point in space
-    x_sampled = np.random.normal(firstPoint[0],std_dev)
-    y_sampled = np.random.normal(firstPoint[1],std_dev)
-    z_sampled = np.random.normal(firstPoint[2],std_dev)
-
-    point_sampled = [x_sampled,y_sampled,z_sampled]
-    #storing the first three 3D corrs in a list
-    minDistanceThree = [corr[0],corr[1],corr[2]]
-
-    #find the one with max distance from point_sampled
-    max, maxIndex = findMax(minDistanceThree, point_sampled,point_cloud)
-
-    #for every element from k to n-1, if the element has smaller distance than max, leave out max and insert this element
-    for c in corr[3:]:
-        if ( distance3D(c,point_sampled,point_cloud) < max) :
-            minDistanceThree[maxIndex] = c
-            #find the new one with max distance from point_sampled
-            max, maxIndex = findMax(minDistanceThree, point_sampled,point_cloud)
+    minCorr = []
+    for i in range(3):
+        #sampling with normal distributions a point in space
+        x_sampled = np.random.normal(firstPoint[0],std_dev)
+        y_sampled = np.random.normal(firstPoint[1],std_dev)
+        z_sampled = np.random.normal(firstPoint[2],std_dev)
+        point_sampled = [x_sampled,y_sampled,z_sampled]
+    
+        #find the corr with min distance from point_sampled
+        minCorr.append(findMin(corr, point_sampled,point_cloud))
+    
 
     #Time Complexity: O((n-k)*k)
 
     #corr1 + minDistanceThree are the 4 correspondances to return
-    corr2 = minDistanceThree[0]
+    corr2 = minCorr[0]
     randomFour = np.vstack((corr1, corr2))
-    corr3 = minDistanceThree[1]
+    corr3 = minCorr[1]
     randomFour = np.vstack((randomFour, corr3))
-    corr4 = minDistanceThree[2]
+    corr4 = minCorr[2]
     randomFour = np.vstack((randomFour, corr4))
 
     return randomFour;
@@ -271,7 +266,7 @@ def normalSampling3D(corr, point_cloud, std_dev):
 #Find Homography, sampling is not uniform but based on 3D distance of scene features. Sampling of the first match is random, then
 #sampling of the other 3 points is based on normal distributions on pointcloud x,y,z values (closer points in space will be sampled more frequently)
 #
-def customFindHomographyNormalSampling3D(obj, scene, point_cloud, thresh):
+def customFindHomographyNormalSampling3D(obj, scene, point_cloud, thresh, std_dev):
 
     random.seed(1234)
 
@@ -287,11 +282,11 @@ def customFindHomographyNormalSampling3D(obj, scene, point_cloud, thresh):
     maxInliers = []
     finalH = None
     finalMask = np.zeros(shape = (len(obj[:,0])) )
-    for i in range(600):
-
+    for i in range(300):
+        
         mask = np.zeros(shape = (len(obj[:,0])) )
 
-        randomFour = normalSampling3D(corr, point_cloud)
+        randomFour = normalSampling3D(corr, point_cloud, std_dev)
 
         #call the homography function on those points
         h = calculateHomography(randomFour)
@@ -314,8 +309,10 @@ def customFindHomographyNormalSampling3D(obj, scene, point_cloud, thresh):
         #print ("Corr size: ", len(corr), " NumInliers: ", len(inliers), "Max inliers: ", len(maxInliers))
 
         if len(maxInliers) > (len(corr)*thresh):
+            
             break
 
+        
     return finalH, finalMask;
 
 

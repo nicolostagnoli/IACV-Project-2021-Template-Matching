@@ -7,7 +7,7 @@ from customRansac import customFindHomographyNormalSampling3D
 import time
 
 
-img_scene = cv.imread("3D/avanti_dietro/rgb_image.jpg")
+img_scene = cv.imread("Test/lab.png")
 img_object = cv.imread("Templates3/barchette_intera.jpg")
 point_cloud = np.load("3D/avanti_dietro/pointCloud.npy") #[height][width][xyz]
 
@@ -22,7 +22,7 @@ matcher = cv.DescriptorMatcher_create(cv.DescriptorMatcher_FLANNBASED)
 knn_matches = matcher.knnMatch(descriptors_obj, descriptors_scene, 2)
 
 #Filter matches using the Lowe's ratio test
-ratio_thresh = 0.87
+ratio_thresh = 0.83
 good_matches = []
 for m,n in knn_matches:
     if m.distance < ratio_thresh * n.distance:
@@ -52,10 +52,10 @@ while((oldSize != newSize) and len(good_matches) >= 4):
         scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
 
     
-    #cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
+    H, mask = cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
     #H, mask =  customFindHomography(obj, scene, 0.4)
     #H, mask =  customFindHomographyPlane3D(obj, scene, point_cloud, 0.55)
-    H, mask = customFindHomographyNormalSampling3D(obj, scene, point_cloud,0.4, 0.1)
+    #H, mask = customFindHomographyNormalSampling3D(obj, scene, point_cloud,0.4, 0.1)
     # H homography from template to scene
     H = np.asarray(H)
     #Take points from the scene that fits with the homography

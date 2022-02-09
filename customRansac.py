@@ -3,8 +3,8 @@ import numpy as np
 import getopt
 import sys
 import random
-
-
+#from sklearn.neighbours import KDTree
+from scipy.spatial import KDTree
 
 #
 # Computers a homography from 4-correspondences
@@ -248,6 +248,7 @@ def normalSampling3D(corr, point_cloud, std_dev):
     
         #find the corr with min distance from point_sampled
         minCorr.append(findMin(corr, point_sampled,point_cloud))
+        
     
 
     #Time Complexity: O((n-k)*k)
@@ -262,10 +263,6 @@ def normalSampling3D(corr, point_cloud, std_dev):
 
     return randomFour;
 
-#
-#Find Homography, sampling is not uniform but based on 3D distance of scene features. Sampling of the first match is random, then
-#sampling of the other 3 points is based on normal distributions on pointcloud x,y,z values (closer points in space will be sampled more frequently)
-#
 def customFindHomographyNormalSampling3D(obj, scene, point_cloud, thresh, std_dev):
 
     random.seed(1234)
@@ -287,6 +284,89 @@ def customFindHomographyNormalSampling3D(obj, scene, point_cloud, thresh, std_de
         mask = np.zeros(shape = (len(obj[:,0])) )
 
         randomFour = normalSampling3D(corr, point_cloud, std_dev)
+
+        #call the homography function on those points
+        h = calculateHomography(randomFour)
+        inliers = []
+        
+
+        for i in range(len(corr)):
+            d = geometricDistance(corr[i], h)
+            if d < 3:
+                inliers.append(corr[i])
+                mask[i] = 1
+                
+
+        if len(inliers) > len(maxInliers):
+            
+            maxInliers = inliers
+            finalH = h
+            finalMask = mask
+
+        #print ("Corr size: ", len(corr), " NumInliers: ", len(inliers), "Max inliers: ", len(maxInliers))
+
+        if len(maxInliers) > (len(corr)*thresh):
+            
+            break
+
+        
+    return finalH, finalMask;
+
+def buildKDTree(obj, scene, point_cloud):
+    correspondenceList = []
+
+    for z in range(len(scene[:,0])):
+            (x1, y1) = obj[z,0] , obj[z,1]
+            (x2, y2) = scene[z,0] , scene[z,1]
+            correspondenceList.append([x1, y1, x2, y2])
+
+    corr = np.matrix(correspondenceList)
+
+    X = []
+    for i in range(len(corr)):
+        X.append(point_cloud[int(corr[i, 3]), int(corr[i, 2])])
+    X = np.matrix(X)
+    tree = KDTree(X, leafsize = 2)
+    return tree, corr
+
+def normalSampling3DTree(corr, point_cloud, tree):
+    #sampling with a uniform distribution the first match
+    corr1 = corr[random.randrange(0, len(corr))]
+    #taking the 3D position of the scene feature
+    firstPoint = point_cloud[int(corr1[0, 3]), int(corr1[0, 2])]
+
+    #find the corr with min distance from point_sampled
+    dist, ind = tree.query(np.asarray(firstPoint).reshape((1, -1)), k=20)
+
+    #random points
+    ind = random.sample(list(ind[0]), 3)
+
+    #corr1 + minDistanceThree are the 4 correspondances to return
+    corr2 = corr[ind[0]]
+    randomFour = np.vstack((corr1, corr2))
+    corr3 = corr[ind[1]]
+    randomFour = np.vstack((randomFour, corr3))
+    corr4 = corr[ind[2]]
+    randomFour = np.vstack((randomFour, corr4))
+
+    return randomFour
+
+#
+#Find Homography, sampling is not uniform but based on 3D distance of scene features. Sampling of the first match is random, then
+#sampling of the other 3 points is based on normal distributions on pointcloud x,y,z values (closer points in space will be sampled more frequently)
+#
+def customFindHomographyNormalSampling3DTree(obj, scene, point_cloud, thresh, tree, corr):
+
+    random.seed(1234)
+
+    maxInliers = []
+    finalH = None
+    finalMask = np.zeros(shape = (len(obj[:,0])) )
+    for i in range(300):
+        
+        mask = np.zeros(shape = (len(obj[:,0])) )
+
+        randomFour = normalSampling3DTree(corr, point_cloud, tree)
 
         #call the homography function on those points
         h = calculateHomography(randomFour)

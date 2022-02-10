@@ -53,18 +53,13 @@ while((oldSize != newSize) and len(good_matches) >= 20):
         obj[i,1] = keypoints_obj[good_matches[i].queryIdx].pt[1]
         scene[i,0] = keypoints_scene[good_matches[i].trainIdx].pt[0]
         scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
-
-
-    #print("Building Tree")
-    #build KDTree between points in the 3d scene
-    tree, corr = buildKDTree(obj, scene, point_cloud)
     
     #print("Find homography")
     #H, mask = cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
     #H, mask =  customFindHomography(obj, scene, 0.4)
     #H, mask =  customFindHomographyPlane3D(obj, scene, point_cloud, 0.55)
     #H, mask = customFindHomographyNormalSampling3D(obj, scene, point_cloud, 0.4, 0.1)
-    H, mask = customFindHomography3DTree(obj, scene, point_cloud, 0.4, tree, corr)
+    H, mask = customFindHomography3DTree(obj, scene, point_cloud, 0.4)
 
     # H homography from template to scene
     H = np.asarray(H)

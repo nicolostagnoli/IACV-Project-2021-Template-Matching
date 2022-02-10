@@ -6,6 +6,10 @@ import random
 #from sklearn.neighbours import KDTree
 from scipy.spatial import KDTree
 
+from sympy import *
+from mpmath import mp
+from IPython.display import display
+
 #
 # Computers a homography from 4-correspondences
 #
@@ -322,11 +326,13 @@ def buildKDTree(obj, scene, point_cloud):
 
     corr = np.matrix(correspondenceList)
 
+    #build tree
     X = []
     for i in range(len(corr)):
         X.append(point_cloud[int(corr[i, 3]), int(corr[i, 2])])
     X = np.matrix(X)
     tree = KDTree(X, leafsize = 2)
+
     return tree, corr
 
 #
@@ -353,13 +359,35 @@ def sampling3DTree(corr, point_cloud, tree):
 
     return randomFour
 
+#https://math.stackexchange.com/questions/3509039/calculate-homography-with-and-without-svd
+def homographyEstimateSVD(points):
+    mat = []
+    for p in points:
+
+        x_1 = [p[0, 0], p[0, 1]]
+        y_1 = [p[0, 2], p[0, 3]]
+        row1 = [x_1[0]*-1 ,y_1[0]*-1 ,-1 ,0 ,0 ,0 ,x_1[0]*x_1[1] ,y_1[0]*x_1[1] ,x_1[1]]
+        row2 = [0 ,0 ,0 ,x_1[0]*-1 , y_1[0]*-1 ,-1 ,x_1[0]*y_1[1] ,y_1[0]*y_1[1] ,y_1[1]]
+        mat.append(row1)
+        mat.append(row2)
+
+    P = np.matrix(mat)
+    [U, S, Vt] = np.linalg.svd(P)
+    homography = Vt[-1].reshape(3, 3)
+    
+    return homography
+
 #
 #Find Homography, sampling is not uniform but based on 3D distance of scene features. Sampling of the first match is random, then
 #sampling of the other 3 points is based on a kd tree built using the 3 spatial dimensions
 #
-def customFindHomography3DTree(obj, scene, point_cloud, thresh, tree, corr):
+def customFindHomography3DTree(obj, scene, point_cloud, thresh):
 
     random.seed(1234)
+
+    #print("Building Tree")
+    #build KDTree between points in the 3d scene
+    tree, corr = buildKDTree(obj, scene, point_cloud)
 
     maxInliers = []
     finalH = None
@@ -394,6 +422,16 @@ def customFindHomography3DTree(obj, scene, point_cloud, thresh, tree, corr):
             
             break
 
+    ### VALIDATION
+    #estimatedHomography = homographyEstimateSVD(maxInliers)
+    #finalInliers = []
+    #finalMask = np.zeros(shape = (len(obj[:,0])) )
+#
+    #for i in range(len(corr)):
+    #    d = geometricDistance(corr[i], h)
+    #    if d < 3:
+    #        finalInliers.append(corr[i])
+    #        finalMask[i] = 1
         
     return finalH, finalMask;
 

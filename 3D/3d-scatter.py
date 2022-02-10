@@ -61,6 +61,7 @@ if __name__ == '__main__':
                 point_cloud[r, c, :] = [u*Z*SCALE_X, v*Z*SCALE_Y, Z]
                 point_colors[r, c, :] = rgb_data[r][c]
     # calculate point normals
+    """
     print("Calculating normals...")
     point_normals = np.zeros((size_y, size_x, 3), dtype=np.float32)
     print_condition = False
@@ -109,22 +110,23 @@ if __name__ == '__main__':
                         normal = -normal
                     point_normals[r, c, :] = normal
             if print_condition: print("NN:", len(window_points))
+    """
     #save point cloud
     np.save(f"3D/avanti_dietro2/pointCloud.npy", point_cloud);
     # thin out data for plotting
-    point_normal_centers = point_cloud[::NORMAL_STRIDE, ::NORMAL_STRIDE, :]
-    point_normals = point_normals[::NORMAL_STRIDE, ::NORMAL_STRIDE, :]
+    #point_normal_centers = point_cloud[::NORMAL_STRIDE, ::NORMAL_STRIDE, :]
+    #point_normals = point_normals[::NORMAL_STRIDE, ::NORMAL_STRIDE, :]
     point_cloud = point_cloud[::POINT_STRIDE, ::POINT_STRIDE, :]
     point_colors = point_colors[::POINT_STRIDE, ::POINT_STRIDE, :]
     # flatten data
-    point_normal_centers = np.reshape(point_normal_centers, (point_normal_centers.shape[0]*point_normal_centers.shape[1], 3))
-    point_normals = np.reshape(point_normals, (point_normals.shape[0]*point_normals.shape[1], 3))
+    #point_normal_centers = np.reshape(point_normal_centers, (point_normal_centers.shape[0]*point_normal_centers.shape[1], 3))
+    #point_normals = np.reshape(point_normals, (point_normals.shape[0]*point_normals.shape[1], 3))
     point_cloud = np.reshape(point_cloud, (point_cloud.shape[0]*point_cloud.shape[1], 3))
     point_colors = np.reshape(point_colors, (point_colors.shape[0]*point_colors.shape[1], 3))
     # filter bad normal values for plotting
-    normal_filter_mask = (point_normals>0).any(1)
-    point_normal_centers = point_normal_centers[normal_filter_mask]
-    point_normals = point_normals[normal_filter_mask]
+    #normal_filter_mask = (point_normals>0).any(1)
+    #point_normal_centers = point_normal_centers[normal_filter_mask]
+    #point_normals = point_normals[normal_filter_mask]
     # filter bad depth values for plotting
     point_filter_mask = (point_cloud>0).any(1)
     point_cloud = point_cloud[point_filter_mask]

@@ -4,7 +4,7 @@ import numpy.ma as ma
 from customRansac import customFindHomography, buildKDTree
 from customRansac import customFindHomographyPlane3D
 from customRansac import customFindHomographyNormalSampling3D
-from customRansac import customFindHomographyNormalSampling3DTree
+from customRansac import customFindHomography3DTree
 import time
 
 
@@ -23,7 +23,7 @@ matcher = cv.DescriptorMatcher_create(cv.DescriptorMatcher_FLANNBASED)
 knn_matches = matcher.knnMatch(descriptors_obj, descriptors_scene, 2)
 
 #Filter matches using the Lowe's ratio test
-ratio_thresh = 0.83
+ratio_thresh = 0.87
 good_matches = []
 for m,n in knn_matches:
     if m.distance < ratio_thresh * n.distance:
@@ -55,16 +55,16 @@ while((oldSize != newSize) and len(good_matches) >= 20):
         scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
 
 
-    print("Building Tree")
+    #print("Building Tree")
     #build KDTree between points in the 3d scene
     tree, corr = buildKDTree(obj, scene, point_cloud)
     
-    print("Find homography")
+    #print("Find homography")
     #H, mask = cv.findHomography(obj, scene, cv.RANSAC, confidence = 0.995, ransacReprojThreshold=5)
     #H, mask =  customFindHomography(obj, scene, 0.4)
     #H, mask =  customFindHomographyPlane3D(obj, scene, point_cloud, 0.55)
     #H, mask = customFindHomographyNormalSampling3D(obj, scene, point_cloud, 0.4, 0.1)
-    H, mask = customFindHomographyNormalSampling3DTree(obj, scene, point_cloud, 0.4, tree, corr)
+    H, mask = customFindHomography3DTree(obj, scene, point_cloud, 0.4, tree, corr)
 
     # H homography from template to scene
     H = np.asarray(H)

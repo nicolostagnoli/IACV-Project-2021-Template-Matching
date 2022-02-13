@@ -8,9 +8,9 @@ from customRansac import customFindHomography3DTree
 import time
 
 
-img_scene = cv.imread("3D/avanti_dietro/rgb_image.jpg")
+img_scene = cv.imread("3D/2/rgb_image.jpg")
 img_object = cv.imread("Templates3/barchette_intera.jpg")
-point_cloud = np.load("3D/avanti_dietro/pointCloud.npy") #[height][width][xyz]
+point_cloud = np.load("3D/2/pointCloud.npy") #[height][width][xyz]
 
 #Detect the keypoints using SURF Detector, compute the descriptors
 minHessian = 1

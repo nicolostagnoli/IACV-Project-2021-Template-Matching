@@ -8,7 +8,6 @@ from scipy.spatial import KDTree
 
 from sympy import *
 from mpmath import mp
-from IPython.display import display
 
 #
 # Computers a homography from 4-correspondences
@@ -91,7 +90,7 @@ def customFindHomography(obj,scene, thresh):
 
         for i in range(len(corr)):
             d = geometricDistance(corr[i], h)
-            if d < 3:
+            if d < 4:
                 inliers.append(corr[i])
                 mask[i] = 1
                 
@@ -194,7 +193,7 @@ def customFindHomographyPlane3D(obj, scene, point_cloud, thresh):
 
         for i in range(len(corr)):
             d = geometricDistance(corr[i], h)
-            if d < 3:
+            if d < 4:
                 inliers.append(corr[i])
                 mask[i] = 1
                 
@@ -296,7 +295,7 @@ def customFindHomographyNormalSampling3D(obj, scene, point_cloud, thresh, std_de
 
         for i in range(len(corr)):
             d = geometricDistance(corr[i], h)
-            if d < 3:
+            if d < 4:
                 inliers.append(corr[i])
                 mask[i] = 1
                 
@@ -345,7 +344,7 @@ def sampling3DTree(corr, point_cloud, tree):
     firstPoint = point_cloud[int(corr1[0, 3]), int(corr1[0, 2])]
 
     #find the k corrs with min distance from point_sampled
-    dist, ind = tree.query(np.asarray(firstPoint).reshape((1, -1)), k=15)
+    dist, ind = tree.query(np.asarray(firstPoint).reshape((1, -1)), k=20)
 
     #random points
     ind = random.sample(list(ind[0]), 3)
@@ -405,7 +404,7 @@ def customFindHomography3DTree(obj, scene, point_cloud, thresh):
 
         for i in range(len(corr)):
             d = geometricDistance(corr[i], h)
-            if d < 3:
+            if d < 4:
                 inliers.append(corr[i])
                 mask[i] = 1
                 

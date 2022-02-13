@@ -3,6 +3,7 @@
 from __future__ import division
 from __future__ import print_function
 from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.image as img
 
 import numpy as np
@@ -24,7 +25,7 @@ FOV_X = 92
 SCALE_Y = tan((FOV_Y/2)*pi/180)
 SCALE_X = tan((FOV_X/2)*pi/180)
 
-POINT_STRIDE = 4
+POINT_STRIDE = 2
 NORMAL_STRIDE = 8
 
 ARROW_LENGTH = 0.08
@@ -37,9 +38,9 @@ if __name__ == '__main__':
     size_x = 640
     size_y = 480
 
-    mat = np.load("3D/6/mat.npy")
-    scene = img.imread('3D/6/rgb_image.jpg')
-    savePath = "3D/6/pointCloud.npy"
+    mat = np.load("3D/1/mat.npy")
+    scene = img.imread('3D/1/rgb_image.jpg')
+    savePath = "3D/1/pointCloud.npy"
 
     print(len(mat))
     print(len(mat[0]))
